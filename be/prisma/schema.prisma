@@ -1,0 +1,120 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextIndex", "fullTextSearch"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Follow {
+  followerId  Int
+  followingId Int
+  follower    User @relation("Following", fields: [followerId], references: [id])
+  following   User @relation("Followers", fields: [followingId], references: [id])
+
+  @@id([followerId, followingId])
+}
+
+model Like {
+  id        Int      @id @default(autoincrement())
+  postId    Int
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  Post Post @relation("likes", fields: [postId], references: [id])
+  User User @relation("liked", fields: [userId], references: [id])
+
+  @@unique([userId, postId])
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  dob       DateTime
+  userName  String    @unique
+  name      String
+  password  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  Post      Post[]
+  tokens    Token[]
+  roles     Role[]    @relation("RoleToUser")
+  Comment   Comment[]
+  files     File[]
+  following Follow[]  @relation("Following")
+  followers Follow[]  @relation("Followers")
+  Like      Like[]    @relation("liked")
+}
+
+model File {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  path      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  post      Post[]   @relation("PostRelation")
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "File_userId_fkey")
+}
+
+model Role {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  users     User[]   @relation("RoleToUser")
+}
+
+model Token {
+  id        Int      @id @default(autoincrement())
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  userId    Int?
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId], map: "Token_userId_fkey")
+}
+
+model Post {
+  id        Int        @id @default(autoincrement())
+  title     String
+  slug      String
+  body      String     @db.Text
+  userId    Int
+  user      User       @relation(fields: [userId], references: [id])
+  category  Category[] @relation("PostToCategory")
+  Comment   Comment[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @default(now()) @updatedAt
+  File      File       @relation("PostRelation", fields: [fileId], references: [id])
+  fileId    Int
+  Like      Like[]     @relation("likes")
+
+  @@unique([userId, title])
+  @@index([userId], map: "Post_userId_fkey")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  comment   String
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  postId    Int
+  post      Post     @relation(fields: [postId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([postId], map: "Comment_postId_fkey")
+  @@index([userId], map: "Comment_userId_fkey")
+}
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  title String
+  Post  Post[] @relation("PostToCategory")
+}

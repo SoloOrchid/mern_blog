@@ -1,0 +1,22 @@
+.card-container {
+    min-height: 400px; /* Adjust based on your desired minimum height */
+    min-width: 400px;
+}
+
+.title-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.body-text {
+    color: var(--mantine-color-dimmed);
+    text-decoration: none;
+    max-height: 150px; /* Adjust based on your desired maximum height for the body */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* Number of lines to show */
+    -webkit-box-orient: vertical;
+    word-wrap: break-word;
+}
